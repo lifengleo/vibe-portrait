@@ -19,9 +19,9 @@
 **支持 WorkBuddy / Claude Code / Codex CLI 的 skill 机制。**
 
 ```bash
-git clone https://github.com/<your-name>/vibe-portrait ~/.workbuddy/skills/vibe-portrait
+git clone https://github.com/lifengleo/vibe-portrait ~/.workbuddy/skills/vibe-portrait
 # 或
-git clone https://github.com/<your-name>/vibe-portrait ~/.claude/skills/vibe-portrait
+git clone https://github.com/lifengleo/vibe-portrait ~/.claude/skills/vibe-portrait
 ```
 
 ### 2. 装依赖
