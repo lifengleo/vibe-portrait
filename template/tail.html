@@ -1,0 +1,31 @@
+</div>
+
+<script>
+  const hourData = {
+    10: 14, 11: 47, 12: 50, 13: 20, 14: 62, 15: 36, 16: 41,
+    17: 71, 18: 28, 19: 54, 20: 45, 21: 11, 22: 6, 23: 8
+  };
+  const max = 71;
+  const heatmap = document.getElementById('heatmap');
+  const hours = document.getElementById('hours');
+  for (let h = 0; h < 24; h++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const v = hourData[h] || 0;
+    let level = 0;
+    if (v > 0) level = 1;
+    if (v > max * 0.25) level = 2;
+    if (v > max * 0.5)  level = 3;
+    if (v > max * 0.85) level = 4;
+    cell.dataset.l = level;
+    cell.title = `${h}:00 — ${v} 条`;
+    heatmap.appendChild(cell);
+
+    const ax = document.createElement('span');
+    ax.textContent = (h % 4 === 0) ? String(h).padStart(2,'0') : '·';
+    hours.appendChild(ax);
+  }
+</script>
+
+</body>
+</html>

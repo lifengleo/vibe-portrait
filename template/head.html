@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe 自画像 · 第 1 期 · Sona</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- 字体选择：
+     - Noto Serif SC 标题与正文衬线
+     - IBM Plex Sans SC 配套无衬线（中文好看的少数 sans）
+     - IBM Plex Mono 数据/编号
+     - Cormorant Garamond 英文小标，比 Inter / system 更有性格
+-->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Sans+SC:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f5f3ee;
+    --paper-2: #ebe7dc;
+    --ink: #111;
+    --ink-2: #2a2a2a;
+    --muted: #6b675e;
+    --muted-2: #908a7d;
+    --line: #c8c2b0;
+    --line-2: #d8d3c4;
+    --red: #c0392b;
+    --teal: #1a6b7a;
+    --highlight: #fff3a6;
+    --max: 720px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Serif SC', 'Source Han Serif SC', Georgia, serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 纸张容器 */
+  .poster {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 72px 56px 96px;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(192,57,43,0.025) 0, transparent 30%),
+      radial-gradient(circle at 90% 60%, rgba(26,107,122,0.025) 0, transparent 30%),
+      var(--paper);
+    position: relative;
+  }
+  /* 隐藏型纸纹 */
+  .poster::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(0,0,0,0.025) 1px, transparent 0);
+    background-size: 4px 4px;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  .poster > * { position: relative; }
+
+  /* 章节通用 */
+  .ch {
+    margin: 96px 0;
+    padding-top: 8px;
+  }
+  .ch-num {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    color: var(--red);
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+  .ch-title {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: 34px;
+    line-height: 1.3;
+    margin: 0 0 8px;
+    letter-spacing: -0.5px;
+  }
+  .ch-sub {
+    font-family: 'Noto Serif SC', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--muted);
+    margin: 0 0 22px;
+    letter-spacing: 0.01em;
+    line-height: 1.55;
+  }
+  .ch-sub::before {
+    content: "—— ";
+    color: var(--red);
+    font-style: normal;
+  }
+
+  hr.rule {
+    border: 0;
+    height: 1px;
+    background: var(--line-2);
+    margin: 36px 0;
+  }
+  hr.rule-thick { background: var(--ink); height: 2px; }
+
+  /* ===== HEAD ===== */
+  .head {
+    padding-top: 24px;
+    position: relative;
+    min-height: 200px;
+  }
+  .head .portrait {
+    position: absolute;
+    top: 16px;
+    right: 8px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--ink);
+    background: #ddd;
+    z-index: 1;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.06);
+  }
+  .head .portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 30% 30%;
+    filter: grayscale(0.05) contrast(1.05);
+    display: block;
+  }
+  .head .portrait-cap {
+    position: absolute;
+    top: 156px;
+    /* 头像中心 = right: 8 + 130/2 = 73px */
+    right: 73px;
+    transform: translateX(50%);
+    text-align: center;
+    font-family: 'Noto Serif SC', 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.65;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .head .portrait-cap b {
+    display: block;
+    color: var(--red);
+    font-style: normal;
+    font-weight: 600;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 12px;
+    margin-bottom: 4px;
+    letter-spacing: 0;
+  }
+  .head h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 900;
+    font-size: 64px;
+    line-height: 1;
+    margin: 0 0 14px;
+    letter-spacing: -2px;
+    white-space: nowrap;
+    position: relative;
+    z-index: 2;
+  }
+  .head .h1-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--muted);
+    letter-spacing: 0.01em;
+    margin-bottom: 28px;
+    font-weight: 400;
+    max-width: 380px;
+  }
+  .head .lede {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 500;
+    font-size: 21px;
+    line-height: 1.85;
+    color: var(--ink-2);
+    border-left: 3px solid var(--red);
+    padding: 4px 0 4px 22px;
+    margin: 0;
+    max-width: 460px;
+  }
+  .head .lede em {
+    color: var(--red);
+    font-style: normal;
+    font-weight: 600;
+  }
+  .head .signature {
+    margin-top: 44px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .head .stamp {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border: 2.5px solid var(--red);
+    color: var(--red);
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.05;
+    text-align: center;
+    transform: rotate(-6deg);
+    flex-shrink: 0;
+    border-radius: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* 数据墙 */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+  }
+  .stat {
+    padding: 24px 20px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .stat:nth-child(2n) { border-right: none; }
+  .stat:nth-last-child(-n+2) { border-bottom: none; }
+  .stat .label {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .stat .num {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -1px;
+  }
+  .stat .num small {
+    font-size: 18px;
+    color: var(--muted);
+    margin-left: 4px;
+    font-weight: 400;
+  }
+  .stat .desc {
+    margin-top: 8px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .hero-num {
+    text-align: center;
+    margin: 56px 0 24px;
+  }
+  .hero-num .label {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .hero-num .number {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 900;
+    font-size: 168px;
+    line-height: 0.95;
+    letter-spacing: -6px;
+    color: var(--ink);
+  }
+  .hero-num .number .unit {
+    font-size: 36px;
+    margin-left: 8px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: -1px;
+  }
+  .hero-num .ann {
+    margin-top: 18px;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  /* 时间画像 */
+  .heatmap {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 2px;
+    margin: 24px 0 8px;
+  }
+  .heatmap .cell {
+    aspect-ratio: 1 / 2;
+    background: var(--paper-2);
+    border: 1px solid var(--line-2);
+  }
+  .heatmap .cell[data-l="1"] { background: #efe7dc; }
+  .heatmap .cell[data-l="2"] { background: #e3c9a8; }
+  .heatmap .cell[data-l="3"] { background: #d49464; }
+  .heatmap .cell[data-l="4"] { background: var(--red); border-color: var(--red); }
+  .hours-axis {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .hours-axis span { text-align: center; }
+
+  .weekday-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .weekday-bars .row {
+    display: grid;
+    grid-template-columns: 60px 1fr 50px;
+    align-items: center;
+    gap: 14px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14px;
+  }
+  .weekday-bars .row .day {
+    color: var(--muted);
+  }
+  .weekday-bars .row .bar {
+    height: 14px;
+    background: var(--ink);
+    border-radius: 1px;
+  }
+  .weekday-bars .row .val {
+    text-align: right;
+    color: var(--ink);
+    font-weight: 500;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+  .weekday-bars .row.king .bar { background: var(--red); }
+  .weekday-bars .row.king .day,
+  .weekday-bars .row.king .val { color: var(--red); font-weight: 700; }
+
+  /* 口头禅 */
+  .verbal-list {
+    border-top: 2px solid var(--ink);
+  }
+  .verbal-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 90px;
+    align-items: baseline;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+    gap: 14px;
+  }
+  .verbal-row .rk {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--red);
+    letter-spacing: 0;
+    line-height: 1;
+  }
+  .verbal-row .ph {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--ink);
+  }
+  .verbal-row .ph small {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 12px;
+    font-style: italic;
+  }
+  .verbal-row .cnt {
+    text-align: right;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .verbal-row .cnt b {
+    color: var(--ink);
+    font-size: 24px;
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    margin-right: 2px;
+  }
+
+  /* 金句卡 */
+  .quote {
+    background: white;
+    border: 1px solid var(--line);
+    padding: 26px 28px 22px;
+    margin: 22px 0;
+    position: relative;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.03);
+  }
+  .quote::before {
+    content: "“";
+    position: absolute;
+    top: -22px;
+    left: -8px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 56px;
+    color: var(--red);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .quote .meta {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .quote .meta .when {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+  .quote .meta .tag {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 3px 10px;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .quote .text {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1.6;
+    color: var(--ink);
+    margin: 0 0 10px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  .quote .text mark {
+    background: var(--highlight);
+    padding: 0 2px;
+  }
+  .quote .ctx {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.75;
+    border-top: 1px dashed var(--line);
+    padding-top: 12px;
+    margin-top: 14px;
+  }
+  .quote.short .text { font-size: 32px; font-weight: 700; }
+  .quote.shortest .text {
+    font-size: 72px;
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 12px;
+    padding: 20px 0;
+  }
+
+  /* 阶段 */
+  .phase-list { margin-top: 12px; }
+  .phase {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 24px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .phase .when {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .phase .when b {
+    display: block;
+    color: var(--red);
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .phase .when .dt {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    margin-top: 4px;
+    display: block;
+  }
+  .phase .body h4 {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: 21px;
+    margin: 0 0 10px;
+  }
+  .phase .body p {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14.5px;
+    line-height: 1.85;
+    color: var(--ink-2);
+    margin: 0 0 10px;
+  }
+  .phase .body .sample {
+    font-family: 'Noto Serif SC', serif;
+    font-style: italic;
+    font-size: 13.5px;
+    color: var(--teal);
+    border-left: 2px solid var(--teal);
+    padding-left: 12px;
+    margin-top: 12px;
+  }
+
+  /* 人格徽章 */
+  .badges {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 22px;
+  }
+  .badge {
+    border: 1.5px solid var(--ink);
+    padding: 18px 18px 16px;
+    background: white;
+    position: relative;
+  }
+  .badge::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border: 1px solid var(--line);
+    pointer-events: none;
+  }
+  .badge .id {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--red);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .badge .nm {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+  .badge .ev {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* 字数对照 */
+  .compare {
+    background: white;
+    border: 2px solid var(--ink);
+    padding: 32px 30px 28px;
+    margin-top: 22px;
+    position: relative;
+  }
+  .compare::before {
+    content: "対 照";
+    position: absolute;
+    top: -13px;
+    left: 24px;
+    background: var(--paper);
+    padding: 0 12px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+  }
+  .compare .big {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 22px;
+    line-height: 1.75;
+    margin: 0 0 18px;
+  }
+  .compare .big b { color: var(--red); }
+  .compare hr {
+    border: 0;
+    height: 1px;
+    background: var(--line);
+    margin: 18px 0;
+  }
+  .compare .pun {
+    font-family: 'Noto Serif SC', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.85;
+  }
+
+  /* 底款 */
+  .colophon {
+    margin-top: 96px;
+    border-top: 2px solid var(--ink);
+    padding-top: 28px;
+    text-align: center;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.85;
+  }
+  .colophon .left .title {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 14px;
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+  .colophon .stamp-final {
+    width: 64px;
+    height: 64px;
+    border: 2px solid var(--red);
+    color: var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1.1;
+    transform: rotate(4deg);
+    flex-shrink: 0;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* 折角分割 */
+  .ornament {
+    text-align: center;
+    margin: 72px 0;
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+  .ornament::before, .ornament::after {
+    content: "—— ";
+    color: var(--line);
+  }
+  .ornament::after { content: " ——"; }
+
+  /* 大字标语 */
+  .big-statement {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.5;
+    color: var(--ink);
+    margin: 28px 0 12px;
+    letter-spacing: -0.5px;
+  }
+  .big-statement em {
+    color: var(--red);
+    font-style: normal;
+  }
+  .big-statement .ann {
+    display: block;
+    font-family: 'Noto Serif SC', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 10px;
+    letter-spacing: 0;
+  }
+
+  /* 小段引导 */
+  .lead-line {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14.5px;
+    color: var(--muted);
+    margin: 0 0 14px;
+    line-height: 1.75;
+  }
+
+  /* 特奖大段标题 */
+  .special-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 36px 0 18px;
+    color: var(--ink);
+    text-align: center;
+    letter-spacing: 0.1em;
+  }
+  .special-title::before, .special-title::after {
+    content: "·";
+    color: var(--red);
+    margin: 0 14px;
+  }
+
+  @media (max-width: 768px) {
+    .poster { padding: 40px 20px 56px; }
+
+    /* 头部 */
+    .head { min-height: auto; padding-top: 12px; }
+    .head h1 {
+      font-size: 44px;
+      letter-spacing: -1.5px;
+      white-space: normal;
+      margin-bottom: 10px;
+    }
+    .head .h1-en { font-size: 15px; margin-bottom: 20px; }
+    .head .lede {
+      font-size: 16px;
+      line-height: 1.75;
+      padding: 2px 0 2px 14px;
+      max-width: 100%;
+    }
+    /* 头像移到右上角，缩小，caption 也放下面 */
+    .head .portrait {
+      width: 72px; height: 72px;
+      top: 0; right: 0;
+      border-width: 1.5px;
+    }
+    .head .portrait-cap {
+      top: 78px;
+      right: 36px; /* 头像中心 = 0 + 72/2 */
+      font-size: 10px;
+      line-height: 1.5;
+    }
+    .head .portrait-cap b { font-size: 10.5px; margin-bottom: 2px; }
+
+    /* 章节 */
+    .ch { margin: 64px 0; }
+    .ch-num { font-size: 11px; }
+    .ch-title { font-size: 24px; line-height: 1.35; }
+
+    /* 数据墙 */
+    .stat-grid { grid-template-columns: 1fr; }
+    .stat { border-right: none; border-bottom: 1px solid var(--line); padding: 18px 14px; }
+    .stat:nth-child(2n) { border-right: none; }
+    .stat:last-child { border-bottom: none; }
+    .stat .num { font-size: 44px; }
+    .stat .num small { font-size: 14px; }
+
+    .hero-num .number { font-size: 96px; letter-spacing: -3px; }
+    .hero-num .number .unit { font-size: 24px; }
+    .hero-num .ann { font-size: 13px; }
+
+    /* 时间画像 */
+    .heatmap .cell { aspect-ratio: 1 / 2.4; }
+    .hours-axis { font-size: 8px; }
+    .weekday-bars .row { grid-template-columns: 44px 1fr 40px; gap: 10px; font-size: 12px; }
+    .weekday-bars .row .val { font-size: 11px; }
+    .big-statement { font-size: 22px; line-height: 1.5; }
+
+    /* 口头禅 */
+    .verbal-row {
+      grid-template-columns: 32px 1fr 64px;
+      gap: 10px;
+      padding: 14px 0;
+    }
+    .verbal-row .rk { font-size: 18px; }
+    .verbal-row .ph { font-size: 15px; }
+    .verbal-row .ph small {
+      display: block;
+      margin-left: 0;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+    .verbal-row .cnt { font-size: 12px; }
+    .verbal-row .cnt b { font-size: 18px; }
+
+    /* 金句卡 */
+    .quote { padding: 22px 18px 18px; margin: 18px 0; }
+    .quote::before { font-size: 44px; top: -18px; }
+    .quote .meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .quote .meta .tag { align-self: flex-end; }
+    .quote .text { font-size: 18px; line-height: 1.55; }
+    .quote.short .text { font-size: 24px; }
+    .quote.shortest .text { font-size: 48px; letter-spacing: 8px; }
+    .quote .ctx { font-size: 12px; }
+
+    .special-title { font-size: 18px; }
+    .special-title::before, .special-title::after { margin: 0 8px; }
+
+    /* 徽章 */
+    .badges { grid-template-columns: 1fr; gap: 12px; }
+    .badge { padding: 16px; }
+    .badge .nm { font-size: 17px; }
+
+    /* 对照框 */
+    .compare { padding: 24px 20px 22px; }
+    .compare .big { font-size: 17px; line-height: 1.65; }
+    .compare .pun { font-size: 13.5px; line-height: 1.7; }
+
+    /* 装饰 + colophon */
+    .ornament { margin: 56px 0; font-size: 11px; }
+    .colophon { margin-top: 64px; font-size: 11px; }
+    .colophon .left .title { font-size: 13px; }
+  }
+
+  @media (max-width: 380px) {
+    .poster { padding: 32px 16px 48px; }
+    .head h1 { font-size: 36px; }
+    .head .portrait { width: 60px; height: 60px; }
+    .head .portrait-cap { top: 66px; right: 30px; }
+    .ch-title { font-size: 22px; }
+    .hero-num .number { font-size: 80px; }
+    .stat .num { font-size: 38px; }
+    .quote.shortest .text { font-size: 40px; letter-spacing: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="poster">

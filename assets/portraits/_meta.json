@@ -1,0 +1,106 @@
+{
+  "_axes_definition": {
+    "length": "句长偏好：0=极短指令，1=长铺陈写作",
+    "calm":   "情绪稳定度：0=反复撕裂，1=克制理性",
+    "architect": "决策层级：0=抠像素细节，1=架构师式给方向"
+  },
+
+  "hemingway": {
+    "name_zh": "海明威",
+    "name_en": "Ernest Hemingway",
+    "axes": { "length": 0.10, "calm": 0.80, "architect": 0.30 },
+    "tagline": "海明威用 6 万字写完了《老人与海》",
+    "follow_up": "你呢 😅",
+    "book": "《老人与海》",
+    "book_words": 60000,
+    "vibe_label": "极简硬汉派"
+  },
+
+  "camus": {
+    "name_zh": "加缪",
+    "name_en": "Albert Camus",
+    "axes": { "length": 0.45, "calm": 0.85, "architect": 0.70 },
+    "tagline": "加缪用 3 万字写完了《局外人》",
+    "follow_up": "你呢 😅",
+    "book": "《局外人》",
+    "book_words": 30000,
+    "vibe_label": "克制理性派"
+  },
+
+  "kafka": {
+    "name_zh": "卡夫卡",
+    "name_en": "Franz Kafka",
+    "axes": { "length": 0.35, "calm": 0.20, "architect": 0.40 },
+    "tagline": "卡夫卡用 5 千字写完了《变形记》",
+    "follow_up": "你呢 😅",
+    "book": "《变形记》",
+    "book_words": 5000,
+    "vibe_label": "焦虑反复派"
+  },
+
+  "borges": {
+    "name_zh": "博尔赫斯",
+    "name_en": "Jorge Luis Borges",
+    "axes": { "length": 0.55, "calm": 0.75, "architect": 0.90 },
+    "tagline": "博尔赫斯用 20 万字搭出了《小径分岔的花园》",
+    "follow_up": "你呢 😅",
+    "book": "《小径分岔的花园》",
+    "book_words": 200000,
+    "vibe_label": "智性嵌套派"
+  },
+
+  "dazai": {
+    "name_zh": "太宰治",
+    "name_en": "Osamu Dazai",
+    "axes": { "length": 0.65, "calm": 0.10, "architect": 0.30 },
+    "tagline": "太宰治用 15 万字写完了《人间失格》",
+    "follow_up": "你呢 😅",
+    "book": "《人间失格》",
+    "book_words": 150000,
+    "vibe_label": "自我怀疑派"
+  },
+
+  "marquez": {
+    "name_zh": "马尔克斯",
+    "name_en": "Gabriel García Márquez",
+    "axes": { "length": 0.85, "calm": 0.65, "architect": 0.85 },
+    "tagline": "马尔克斯用 30 万字写完了《百年孤独》",
+    "follow_up": "你呢 😅",
+    "book": "《百年孤独》",
+    "book_words": 300000,
+    "vibe_label": "魔幻铺陈派"
+  },
+
+  "duras": {
+    "name_zh": "杜拉斯",
+    "name_en": "Marguerite Duras",
+    "axes": { "length": 0.20, "calm": 0.45, "architect": 0.30 },
+    "tagline": "杜拉斯用 5 万字写完了《情人》",
+    "follow_up": "你呢 😅",
+    "book": "《情人》",
+    "book_words": 50000,
+    "vibe_label": "破碎私密派"
+  },
+
+  "dostoevsky": {
+    "name_zh": "陀思妥耶夫斯基",
+    "name_en": "Fyodor Dostoevsky",
+    "axes": { "length": 0.95, "calm": 0.15, "architect": 0.65 },
+    "tagline": "陀思妥耶夫斯基用 10 万字写完了《地下室手记》",
+    "follow_up": "你呢 😅",
+    "book": "《地下室手记》",
+    "book_words": 100000,
+    "vibe_label": "全面撕裂派"
+  },
+
+  "akutagawa": {
+    "name_zh": "芥川龙之介",
+    "name_en": "Ryūnosuke Akutagawa",
+    "axes": { "length": 0.30, "calm": 0.55, "architect": 0.40 },
+    "tagline": "芥川用 18 万字写完了《罗生门》",
+    "follow_up": "你呢 😅",
+    "book": "《罗生门》",
+    "book_words": 180000,
+    "vibe_label": "锋利东方派"
+  }
+}

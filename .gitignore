@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Vibe portrait runtime
+data/*
+!data/.gitkeep
+*.local.json
+
+# Output (用户跑完会在 cwd 下生成 vibe-portrait/<日期>/)
+/vibe-portrait/

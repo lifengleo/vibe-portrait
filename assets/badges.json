@@ -1,0 +1,111 @@
+{
+  "_comment": "徽章触发字典 — 番 5 用，从 15 个候选里选触发的前 6 个，至少 4 个才出本章。evidence_template 必须保持锐评/反高潮调性，不写鸡汤。",
+
+  "badges": [
+    {
+      "id": "weekday_warrior",
+      "trigger": { "type": "weekday_max_ratio", "min": 0.35 },
+      "name_template": "周{X_weekday_zh}战神",
+      "evidence_template": "{ratio_pct}% 的 vibe 都堆在周{X_weekday_zh}。<br>剩下六天像是在攒劲。",
+      "weight": 10
+    },
+    {
+      "id": "afternoon_coach",
+      "trigger": { "type": "hour_max_ratio", "min": 0.15 },
+      "name_template": "{hour}点教练",
+      "evidence_template": "{hour} 点是单点峰值（{count} 条）。<br>不是 9 晚 5，是「想起来才 vibe」。",
+      "weight": 9
+    },
+    {
+      "id": "night_owl",
+      "trigger": { "type": "night_ratio", "min": 0.05 },
+      "name_template": "夜猫子",
+      "evidence_template": "0-6 点占了 {ratio_pct}%。<br>Mac 都比你先困。",
+      "weight": 8
+    },
+    {
+      "id": "early_bird",
+      "trigger": { "type": "morning_ratio", "min": 0.20 },
+      "name_template": "早起鸟",
+      "evidence_template": "6-9 点占了 {ratio_pct}%。<br>这个时间段在 vibe，多少有点反人类。",
+      "weight": 8
+    },
+    {
+      "id": "visual_ocd",
+      "trigger": { "type": "pattern_combo", "patterns": ["还是…", "太…了"], "min_total": 30 },
+      "name_template": "视觉强迫症",
+      "evidence_template": "「还是…」{count_a} 次 +「太…了」{count_b} 次。<br>一个像素都能毁你一整天。",
+      "weight": 9
+    },
+    {
+      "id": "ai_taste_clean",
+      "trigger": { "type": "pattern_count", "pattern": "AI 味", "min": 3 },
+      "name_template": "AI 味洁癖",
+      "evidence_template": "点名拒绝「AI 味」和「不是…而是」句式。<br>AI 写得像 AI，你比 AI 还急。",
+      "weight": 8
+    },
+    {
+      "id": "long_haul",
+      "trigger": { "type": "active_days", "min": 10 },
+      "name_template": "{active_days}天 vibe 守夜人",
+      "evidence_template": "{span_days} 天里 {active_days} 天都在 vibe。<br>放不下的不是项目，是手。",
+      "weight": 7
+    },
+    {
+      "id": "blitz",
+      "trigger": { "type": "blitz", "max_days": 5, "min_chars": 10000 },
+      "name_template": "{active_days}天闪电战",
+      "evidence_template": "{active_days} 天 {total_chars} 字。<br>不是来交作业的，是来干一票就走的。",
+      "weight": 8
+    },
+    {
+      "id": "talker",
+      "trigger": { "type": "mean_len", "min": 100 },
+      "name_template": "话痨之王",
+      "evidence_template": "平均句长 {mean_len} 字。<br>每条 prompt 都是 PRD。",
+      "weight": 7
+    },
+    {
+      "id": "minimalist",
+      "trigger": { "type": "mean_len", "max": 20 },
+      "name_template": "指令简兵",
+      "evidence_template": "平均句长 {mean_len} 字。<br>能一个字打发的事，绝不开口第二字。",
+      "weight": 7
+    },
+    {
+      "id": "redo_master",
+      "trigger": { "type": "pattern_count", "pattern": "重做 / 重来 / 重新", "min": 15 },
+      "name_template": "重做大师",
+      "evidence_template": "「重做/重来/重新」{count} 次。<br>每次都觉得这次一定行。",
+      "weight": 7
+    },
+    {
+      "id": "multi_owner",
+      "trigger": { "type": "project_count", "min": 3 },
+      "name_template": "跨界主理人",
+      "evidence_template": "{project_count} 个项目同时在 vibe。<br>不是多线程，是哪个亮就点哪个。",
+      "weight": 8
+    },
+    {
+      "id": "terminator",
+      "trigger": { "type": "short_command_count", "min": 30 },
+      "name_template": "无情终结者",
+      "evidence_template": "「好/可以/部署吧/下一步」{count} 次。<br>说收工就收工，不带商量。",
+      "weight": 7
+    },
+    {
+      "id": "writer",
+      "trigger": { "type": "total_chars", "min": 50000 },
+      "name_template": "文字工作者",
+      "evidence_template": "总字数 {total_chars}。<br>这点字数要是写小说，早出版了。",
+      "weight": 7
+    },
+    {
+      "id": "namer",
+      "trigger": { "type": "naming_count", "min": 5 },
+      "name_template": "起名大师",
+      "evidence_template": "起了 {count} 个名字。<br>项目还没做完，词库先建了。",
+      "weight": 7
+    }
+  ]
+}

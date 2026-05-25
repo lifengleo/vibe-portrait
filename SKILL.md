@@ -1,0 +1,247 @@
+---
+name: vibe-portrait
+description: |
+  Vibe 自画像——把用户和 AI 共写产品时的 prompt 历史，做成一张「年度自画像」海报。
+  自动检测本地多个 agent（WorkBuddy / Claude Code / Codex CLI 等）的对话历史，
+  让用户选一个或多个对话窗口，统计 prompt 习惯（句长/作息/口癖/金句），
+  匹配 9 位作家中最像的一位作为镜像，输出 HTML + JPG 长图。
+
+  ▸ 用户视角（不是项目视角）——海报主语永远是"用户"
+  ▸ 跨 agent 适配——不绑定任何特定平台
+  ▸ 完全本地——不上传任何对话内容
+  ▸ 两阶段流程——agent 自己用 LLM 能力增强海报文案
+
+  当用户说以下任一意图时触发本 skill：
+    "跑我的 vibe 自画像" / "做一份 vibe 自画像" / "盘点我的 vibe coding"
+    "看看我和 AI 都说了什么" / "我的 prompt 习惯是什么样的"
+    "vibe portrait" / "vibe wrapped"
+allowed-tools: Bash, Read, Write
+agent_created: true
+---
+
+# Vibe 自画像（vibe-portrait）
+
+## 这个 skill 做什么
+
+把用户这阵子和 AI 说过的话，拉出来跟他对个账。
+
+输出是一张图——上面有他说了多少话、什么时候说的、最爱说哪几句、最有戏的几句、可以颁给他的几个奖、以及和他最像的一位作家。
+
+整张图保持「葬AI」反高潮口语风：不写「AI 味」装饰文，不写「××分布·按次数排序」这种说明文。
+
+## 核心机制：两阶段 pipeline
+
+这是 skill 设计的关键——**LLM 能力是用户本地 agent 的能力，是免费的工具**。所以海报里所有"看起来需要灵性"的部分都让 agent 自己写：
+
+```
+[阶段 1] python3 run.py [选项]
+    ↓
+[产出 data.json，里面 5 个 LLM 待填字段]
+    ↓
+[阶段 2] agent 读 data.json，调自己的 LLM 能力填 5 个字段
+    ↓
+[阶段 3] python3 run.py --finalize <data.json>
+    ↓
+[产出 index.html + portrait-share.jpg + portrait-hd.jpg]
+```
+
+## 完整执行流程（agent 必读）
+
+### 第 1 步：必填昵称
+
+读取 `~/.vibe-portrait/config.json`：
+- 已有 `user_name` → 跳过
+- 没有 → 问用户「怎么称呼你？」，写入配置
+
+### 第 2 步：调起 analyze
+
+```bash
+python3 ~/.workbuddy/skills/vibe-portrait/run.py
+```
+
+CLI 会自动列出本地检测到的对话窗口，让用户挑。
+
+或者直接传参：
+```bash
+python3 run.py --user 恩瑞 --multi 1,3
+```
+
+完成后会产出：
+- `./vibe-portrait/<日期>/data.json` ← 待你增强
+- `./vibe-portrait/<日期>/assets/` ← 肖像资源
+
+### 第 3 步：LLM 增强（**agent 必须做的 5 个任务**）
+
+读取 data.json，找到 `_llm_tasks.tasks` 列表（5 个任务），按以下要求填字段：
+
+> ⚠️ **写作基准**（5 个任务都要遵守，详见 SPEC §9.4）：
+>
+> 整张海报的口吻 = **葬 AI 风 + 即刻吐槽体**：反高潮、自嘲、像朋友损你。
+>
+> **❌ 禁忌**：鸡汤陈述（"命名是设计的一半"）/ 客观描述（"AI 翻车了你直接训"，像新闻播报）/ 排比 / 抽象格言 / 主动夸用户
+>
+> **✅ 鼓励**：具体动词 + 数字（"折腾了两周"）/ 反差对比 / 损人不带脏字（"AI 已被你踢出群聊"）/ 网络梗 / 口语转折
+>
+> **对照（学这个调）**：
+> | ❌ 温柔（不要这样写） | ✅ 锐评（要这样写） |
+> |---|---|
+> | 命名时刻。你给某个东西起了名字。 | 为了「探测」这俩字，你折腾了两周。 |
+> | AI 又翻车了。你没解释，直接训。 | AI 已被你踢出群聊。 |
+> | 不连续，但很笃定。 | 放不下的不是项目，是手。 |
+> | 这是难得的好习惯——你的 Mac 也要睡觉。 | 不是不卷，是 Mac 也得睡。 |
+
+#### 任务 1：quote_ctx_and_tag
+
+**位置**：`quotes` 数组里每条金句
+
+**对每条金句做**：
+- 读 `text`（金句原文） + `context_before` + `context_after`（前后各 3 条对话上下文，含时间戳）
+- 写 `ctx`：一句 ≤30 字的「贴脸锐评」
+  - good → "为了「探测」这俩字，你折腾了两周。"
+  - good → "AI 已被你踢出群聊。"
+  - bad → "命名时刻。你给某个东西起了名字。"（鸡汤陈述）
+  - bad → "AI 又翻车了。你没解释，直接训。"（客观描述）
+  - **诚实，不能编造细节**——上下文看不出"当时在做什么"，**保留 ctx_default 不动**
+- 写 `tag`：4-6 字的中文标签
+  - 例：情报指挥官、一字 KO、二连暴击、Sona 命名、工头收工
+
+#### 任务 2：project_aliases
+
+**位置**：`project_aliases` 数组里每个项目
+
+**对每个项目做**：
+- 读 `first_prompt`（第一句话）
+- 写 `alias`：2-6 字的中文别名（覆盖目录名）
+  - 例：first_prompt 是"我想做一个网站，目标是筛选..." → alias = "Sona"
+  - first_prompt 是"分析礼物业务..." → alias = "礼物周报"
+- **如果第一句信息不足以判断主题**，**保留 alias_default 不动**
+
+#### 任务 3：author_followup
+
+**位置**：顶层 `author_followup` 字段
+
+**做什么**：
+- 看 `matched_author.name_zh` + 用户三轴 + TOP 口癖 + 徽章
+- 把封面作家头像下方的「你呢 😅」换成**贴脸吐槽**（≤20 字）
+- 格式：以「{作家名}：」开头，**模仿作家口吻反过来损用户**
+  - good → 海明威：我一句没写过 200 字，你一句 300。
+  - good → 卡夫卡：起码我没「重做」50 次。
+  - good → 博尔赫斯：他迷宫只画一遍，你呢？
+  - bad → 加缪：你也很有想法。（褒义禁止）
+- **想不出比默认更狠**就保留 `author_followup_default`
+
+#### 任务 4：badges_summary
+
+**位置**：顶层 `badges_summary` 字段（默认空字符串）
+
+**做什么**：
+- 看 6 个徽章 + 用户三轴 + 匹配作家
+- 写一句**贴脸总结**（≤25 字）：把多个徽章串成一句话「人格速写」，要有反差
+  - good → 一个反复推翻的架构师，靠周五一天干完一周的活。
+  - good → 视觉强迫症 + 周五战神，组合起来是个偏执的拖延者。
+  - bad → 你是一个非常努力且有创造力的人。（鸡汤）
+- **不强出**——空字符串 = 不展示这一行
+
+#### 任务 5：outro_pun（终番戏谑句）
+
+**位置**：顶层 `outro_pun` 字段
+
+**做什么**：4-6 行 HTML（`<br>` 分行）写「作家 vs 你」对照
+- **第 1 行**：作家身上**最反差的小知识**（不是泛泛字数对比）
+- **第 2-4 行**：用用户真实数据（字数、口癖次数、重做次数）写自嘲
+- **最后 1 行**：反高潮收尾
+- 数字必须从 stats / top_patterns 取，**不能编**
+
+  good 例（博尔赫斯）：
+  ```
+  博尔赫斯一辈子最长的小说不到 2 万字。<br>
+  你用 5.7 万字 vibe 出一个项目——<br>
+  说了 16 次「不好」，重做了 11 次，<br>
+  「还是没变」念了 50 次。<br>
+  但你也真的把它搞出来了。
+  ```
+
+- **想不出比默认更戳**就保留 `outro_pun_default`
+
+### 第 4 步：保存 + finalize
+
+把修改后的 data.json 保存到原位置，然后调用：
+
+```bash
+python3 ~/.workbuddy/skills/vibe-portrait/run.py --finalize <data.json 绝对路径>
+```
+
+会产出：
+- `index.html`
+- `portrait-share.jpg`（1.5MB，分享版）
+- `portrait-hd.jpg`（2.3MB，高清版）
+
+### 第 5 步：展示 + 交付
+
+- 调用 `preview_url` 打开 HTML
+- 调用 `deliver_attachments` 把两个 JPG 推给用户
+
+## 兜底机制（关键）
+
+每个 LLM 字段都有 `<field>_default` 兜底值。如果你不动 LLM 字段（保持为 `null` 或保持等于 default），渲染时会自动用兜底文案——海报照样能出，只是不那么贴肉。
+
+**所以：当 LLM 写不出比兜底更好的内容时，必须保留兜底。绝对不要为了"显得有 LLM 增强"而瞎写。**
+
+## 跳过 LLM 模式
+
+如果用户明确想"快速跑一个版本"或者你判断 LLM 调用成本太高（比如 token 紧张）：
+
+```bash
+python3 run.py --user 恩瑞 --multi 1,3 --skip-llm
+```
+
+直接用兜底文案出图，整个 pipeline 一步到位。
+
+## 关键约束
+
+1. **必填昵称才能继续**——第一次跑必须先问
+2. **数据完全本地处理**——不上传任何 prompt 内容到任何服务器
+3. **章节按规则触发**——数据不足时整章跳过，不要凑数
+4. **LLM 增强写不出就保留兜底**——不要为了显示存在感瞎写
+5. **诚实**——ctx 里不能编造细节（"当时正在做 X"必须有上下文证据）
+
+## 错误处理
+
+- 没检测到任何 agent → 提示用户检查 `~/.workbuddy/` `~/.claude/` `~/.codex/`
+- 选中项目数据 < 5 条 prompt → 提示数据太少
+- 生成失败 → 透出 stderr
+
+## Pitfalls（开发踩过的坑，新手别再踩）
+
+1. **静态文案和 LLM 文案要风格一致**——只调 LLM prompt 让 agent 写得狠没用，`assets/badges.json` 里的 evidence_template、`render.py` 里的 desc/ann 也得同步成锐评款。「锐评要做就做全」。
+2. **WorkBuddy 5 月起的对话格式有 `<system-reminder>...</system-reminder><user_query>...</user_query>` 包装**——adapter 必须正则剥离，否则会把 system 注入也算成用户字数（漏算/多算几万字）。
+3. **timestamps=0 的脏数据**——adapter 里要过滤，否则 earliest 会算成 1970-01-01，span_days 爆表。
+4. **Python 3.9 不支持 `Path | None`**——所有类型注解用 `Optional[Path]`。
+5. **Bash stdout 中文显示乱码不代表数据真错了**——是 Bash 工具的渲染问题，文件本身 UTF-8 正常。验证数据要 Read 文件，不要 grep 看 stdout。
+6. **截图视口不能小于 768**——会触发 v2 的移动端媒体查询，stat-grid 变成单列。Playwright 视口固定 900px，截图时只截 `.poster` 元素去除两侧白边。
+7. **PNG 大于 4MB 会被某些客户端拒绝**——sharp 转 mozjpeg quality 88，2x 高清 ~2MB，1500 宽 share 版 ~1.5MB。
+8. **「小半本《XX》」语序敏感**——汉语里"《XX》的小半本"读着别扭，正确语序是"小半本《XX》"。
+9. **百分比对照很伤气质**——海报里禁用「28% 本《XX》」这种数字，必须用"小半本/半本/大半本/整本/一本半"等人文气词。
+10. **加缪不是默认作家**——如果用户匹配距离不算高（< 0.4），caption 仍用最近的作家；旧版海报里固定写"加缪"是 v1 硬编码，v3 完全数据驱动。
+
+## 文档参照
+
+- `SPEC.md` — 产品规则总文档（三轴算法、章节优先级、徽章字典等）
+- `README.md` — 给开源/CLI 用户看
+- `assets/portraits/_meta.json` — 9 位作家的元数据
+- `assets/lexicon.json` — 口癖词典 + 否定词
+
+## 命令行兼容（用户视角）
+
+```bash
+# 交互式 + 完整两阶段（推荐）
+python3 ~/.workbuddy/skills/vibe-portrait/run.py
+# 然后 agent 增强 data.json
+python3 run.py --finalize <data.json>
+
+# 快速版（跳过 LLM 增强）
+python3 run.py --skip-llm
+
+# 跨项目
+python3 run.py --multi 1,3,5
+```
