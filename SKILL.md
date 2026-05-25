@@ -55,8 +55,13 @@ agent_created: true
 
 ### 第 2 步：调起 analyze
 
+skill 的入口脚本就在本目录的 `run.py`（你正在读的这个 SKILL.md 同级）。所有命令都在 skill 目录下跑，例如：
+
 ```bash
-python3 ~/.workbuddy/skills/vibe-portrait/run.py
+cd <skill 目录>          # WorkBuddy: ~/.workbuddy/skills/vibe-portrait
+                         # Claude Code: ~/.claude/skills/vibe-portrait
+                         # Codex CLI: ~/.codex/skills/vibe-portrait
+python3 run.py
 ```
 
 CLI 会自动列出本地检测到的对话窗口，让用户挑。
@@ -65,6 +70,8 @@ CLI 会自动列出本地检测到的对话窗口，让用户挑。
 ```bash
 python3 run.py --user 恩瑞 --multi 1,3
 ```
+
+> 想直接指定一个 jsonl，也可以：`python3 run.py --user 恩瑞 --project /abs/path/file.jsonl --source workbuddy`。这种方式不需要本机有默认 agent 历史。
 
 完成后会产出：
 - `./vibe-portrait/<日期>/data.json` ← 待你增强
@@ -168,18 +175,25 @@ python3 run.py --user 恩瑞 --multi 1,3
 把修改后的 data.json 保存到原位置，然后调用：
 
 ```bash
-python3 ~/.workbuddy/skills/vibe-portrait/run.py --finalize <data.json 绝对路径>
+python3 <skill 目录>/run.py --finalize <data.json 绝对路径>
 ```
 
-会产出：
+会产出（同 data.json 所在目录）：
 - `index.html`
-- `portrait-share.jpg`（1.5MB，分享版）
-- `portrait-hd.jpg`（2.3MB，高清版）
+- `portrait-share.jpg`（约 1.5MB，分享版；需要 Node 截图依赖）
+- `portrait-hd.jpg`（约 2.3MB，高清版；需要 Node 截图依赖）
+
+> 没装截图依赖时，HTML 仍会正常输出，JPG 会跳过并打 warning。
 
 ### 第 5 步：展示 + 交付
 
-- 调用 `preview_url` 打开 HTML
-- 调用 `deliver_attachments` 把两个 JPG 推给用户
+把产物交给用户，**用宿主 agent 自己的方式**——这一步**没有规定工具名**，因为不同 agent 工具集不一样：
+
+- **WorkBuddy**：用 `preview_url` 打开 `index.html`，用 `deliver_attachments` 推两张 JPG
+- **Claude Code / Codex CLI**：直接把 `index.html` 的绝对路径告诉用户，让用户在浏览器里打开；JPG 路径一并给出
+- **任何 agent**：通用兜底——把产物目录路径列给用户（HTML + 两张 JPG），让用户自己取
+
+**核心原则**：海报已经落到磁盘上，宿主 agent 用任何能用的方式把绝对路径透给用户即可。
 
 ## 兜底机制（关键）
 
@@ -233,9 +247,11 @@ python3 run.py --user 恩瑞 --multi 1,3 --skip-llm
 
 ## 命令行兼容（用户视角）
 
+所有命令都在 skill 目录下跑（路径因 agent 而异，见第 2 步）：
+
 ```bash
 # 交互式 + 完整两阶段（推荐）
-python3 ~/.workbuddy/skills/vibe-portrait/run.py
+python3 run.py
 # 然后 agent 增强 data.json
 python3 run.py --finalize <data.json>
 
@@ -244,4 +260,7 @@ python3 run.py --skip-llm
 
 # 跨项目
 python3 run.py --multi 1,3,5
+
+# 直接指定 jsonl（不依赖默认 agent 历史检测）
+python3 run.py --user 恩瑞 --project /abs/path/file.jsonl --source workbuddy
 ```

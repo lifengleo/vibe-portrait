@@ -577,11 +577,11 @@ class BaseAdapter:
 
 ### 11.2 已支持平台
 
-| Adapter | 路径 | 特殊处理 |
-|---|---|---|
-| **workbuddy** | `~/.workbuddy/projects/<dir>/<id>.jsonl` | 剥离 `<system-reminder>` + `<user_query>` 包装 |
-| **claude_code** | `~/.claude/projects/<dir>/<id>.jsonl` | 待实现 |
-| **codex** | `~/.codex/sessions/<date>/*.jsonl` | 待实现 |
+| Adapter | 路径 | 特殊处理 | 状态 |
+|---|---|---|---|
+| **workbuddy** | `~/.workbuddy/projects/<dir>/<id>.jsonl` | 剥离 `<system-reminder>` + `<user_query>` 包装 | ✅ 真实数据测过 |
+| **claude_code** | `~/.claude/projects/<dir>/<id>.jsonl` | 标准 jsonl，user 消息按 role 过滤 | 🟡 best-effort，待真实数据校验 |
+| **codex** | `~/.codex/sessions/<date>/*.jsonl` | 字段名兼容 `role`/`type`、`timestamp`/`created_at` | 🟡 best-effort，待真实数据校验 |
 
 ### 11.3 探测顺序
 

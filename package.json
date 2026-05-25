@@ -1,0 +1,16 @@
+{
+  "name": "vibe-portrait",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Render + screenshot deps for vibe-portrait skill (HTML -> JPG).",
+  "scripts": {
+    "postinstall": "playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.60.0",
+    "sharp": "^0.34.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

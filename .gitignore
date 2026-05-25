@@ -24,3 +24,7 @@ data/*
 
 # Output (用户跑完会在 cwd 下生成 vibe-portrait/<日期>/)
 /vibe-portrait/
+
+# Node deps（用户本地装的截图依赖）
+node_modules/
+package-lock.json

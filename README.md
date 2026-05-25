@@ -35,12 +35,16 @@ git clone https://github.com/lifengleo/vibe-portrait ~/.claude/skills/vibe-portr
 **系统要求**：Python 3.9+ / Node.js 18+
 
 ```bash
-# 截图 + 压图依赖
-npm install -g playwright sharp
-npx playwright install chromium
+# 进入 skill 目录（路径因 agent 而异，见上一步）
+cd ~/.workbuddy/skills/vibe-portrait    # 或对应的 Claude / Codex 路径
+
+# 装截图 + 压图依赖（playwright + sharp，版本锁在 package.json）
+npm install
 ```
 
-Python 用标准库，无需额外装。
+> Python 用标准库，无需额外装。
+>
+> 如果只要 HTML 不要 JPG，**可以跳过这一步**——`run.py` 会自动检测，没装时跳过截图并打 warning，HTML 照样产出。
 
 ### 3. 跑
 
@@ -51,7 +55,8 @@ Python 用标准库，无需额外装。
 **方式 B：命令行**
 
 ```bash
-python3 ~/.workbuddy/skills/vibe-portrait/run.py
+cd ~/.workbuddy/skills/vibe-portrait    # 或对应的 Claude / Codex 路径
+python3 run.py
 ```
 
 第一次会问你昵称（保存到 `~/.vibe-portrait/config.json`，下次不再问）。然后列出本机所有对话窗口让你选哪个 / 哪几个项目要分析。最后产出在当前目录的 `vibe-portrait/<日期>/` 下。
@@ -59,7 +64,7 @@ python3 ~/.workbuddy/skills/vibe-portrait/run.py
 ### 4. 升级
 
 ```bash
-cd ~/.workbuddy/skills/vibe-portrait && git pull
+cd ~/.workbuddy/skills/vibe-portrait && git pull && npm install
 ```
 
 ---
@@ -94,9 +99,11 @@ cd ~/.workbuddy/skills/vibe-portrait && git pull
 | Agent | 路径 | 状态 |
 |---|---|---|
 | WorkBuddy | `~/.workbuddy/projects/` | ✅ 真实数据测过 |
-| Claude Code | `~/.claude/projects/` | ✅ 实现完成（待真实环境验证） |
-| Codex CLI | `~/.codex/sessions/` | ✅ 实现完成（待真实环境验证） |
+| Claude Code | `~/.claude/projects/` | 🟡 实现完成（best-effort，待真实数据校验） |
+| Codex CLI | `~/.codex/sessions/` | 🟡 实现完成（best-effort，待真实数据校验） |
 | Cursor / Aider / ... | — | 欢迎 PR adapter |
+
+> 🟡 含义：adapter 代码已写完、能跑通合成数据；但 Claude / Codex 的 jsonl 字段在真实环境里可能略有差异，欢迎在 issue 里反馈，或直接传 `--project /abs/path/file.jsonl` 绕过自动检测。
 
 ---
 
@@ -112,11 +119,17 @@ python3 run.py --user 恩瑞 --multi 1,3
 # 跨项目
 python3 run.py --multi 1,3,5
 
+# 直接指定 jsonl（不依赖默认 agent 历史检测，适合 Claude / Codex / 自定义路径）
+python3 run.py --user 恩瑞 --project /abs/path/file.jsonl --source workbuddy
+
 # 跳过 LLM 增强（一步到位 + 兜底文案）
 python3 run.py --skip-llm
 
 # Finalize（agent 增强 data.json 后调用）
 python3 run.py --finalize ./vibe-portrait/2026-05-25/data.json
+
+# 只列对话窗口，不跑分析
+python3 run.py --list
 ```
 
 ---

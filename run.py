@@ -176,9 +176,10 @@ def screenshot(out_dir: Path):
         print("⚠️  没找到 node 可执行文件——请装 Node.js，或设置 VIBE_NODE 环境变量")
         return
 
-    # NODE_PATH（用户全局 node_modules）— 找 playwright/sharp 用
+    # NODE_PATH（找 playwright/sharp 用）— 优先 skill 本地 node_modules
     node_modules_candidates = [
         os.environ.get("NODE_PATH"),
+        str(HERE / "node_modules"),
         str(Path.home() / ".workbuddy/binaries/node/workspace/node_modules"),
     ]
     node_path = next((p for p in node_modules_candidates if p and Path(p).exists()), None)
@@ -223,22 +224,22 @@ def main():
 
     print("Vibe 自画像 · 启动\n")
 
-    # 1. 昵称
-    if args.user:
-        cfg = load_config()
-        cfg["user_name"] = args.user
-        save_config(cfg)
-        user_name = args.user
-    else:
-        user_name = prompt_user_name()
-
-    # 2. 列项目
-    projects = list_projects_with_index()
+    # ===== --list 模式：纯查询，不需要昵称 =====
     if args.list:
+        list_projects_with_index()
         return
 
-    # 3. 选项目
+    # ===== --project 模式：直接指定 jsonl，跳过项目检测 =====
     if args.project:
+        # 昵称
+        if args.user:
+            cfg = load_config()
+            cfg["user_name"] = args.user
+            save_config(cfg)
+            user_name = args.user
+        else:
+            user_name = prompt_user_name()
+
         adapter_name = args.source or "workbuddy"
         adapter = get_adapter_by_name(adapter_name)
         from adapters.base import ProjectInfo
@@ -247,11 +248,25 @@ def main():
                          prompt_count=0, first_prompt_preview="",
                          first_at=0, last_updated=0)
         chosen = [pi]
-    elif args.multi:
-        indices = parse_selection(args.multi, len(projects))
-        chosen = [projects[i - 1] for i in indices]
     else:
-        chosen = select_projects(projects)
+        # 1. 昵称
+        if args.user:
+            cfg = load_config()
+            cfg["user_name"] = args.user
+            save_config(cfg)
+            user_name = args.user
+        else:
+            user_name = prompt_user_name()
+
+        # 2. 列项目
+        projects = list_projects_with_index()
+
+        # 3. 选项目
+        if args.multi:
+            indices = parse_selection(args.multi, len(projects))
+            chosen = [projects[i - 1] for i in indices]
+        else:
+            chosen = select_projects(projects)
 
     print(f"\n▸ 选中 {len(chosen)} 个项目，开始抽取 prompt...")
     prompts = collect_prompts(chosen)
