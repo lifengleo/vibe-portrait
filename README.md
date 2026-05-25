@@ -16,20 +16,26 @@
 
 ### 1. 拉到 skills 目录
 
-**支持 WorkBuddy / Claude Code / Codex CLI 的 skill 机制。**
+支持任何使用 SKILL.md 机制的本地 agent（WorkBuddy / Claude Code / Codex CLI 等）。
 
+**WorkBuddy 用户**：
 ```bash
 git clone https://github.com/lifengleo/vibe-portrait ~/.workbuddy/skills/vibe-portrait
-# 或
+```
+
+**Claude Code 用户**：
+```bash
 git clone https://github.com/lifengleo/vibe-portrait ~/.claude/skills/vibe-portrait
 ```
+
+> 不会用 git？也可以下 [release tar 包](https://github.com/lifengleo/vibe-portrait/releases) 解压到对应目录。
 
 ### 2. 装依赖
 
 **系统要求**：Python 3.9+ / Node.js 18+
 
 ```bash
-# Node 包：截图 + 压图
+# 截图 + 压图依赖
 npm install -g playwright sharp
 npx playwright install chromium
 ```
@@ -38,14 +44,22 @@ Python 用标准库，无需额外装。
 
 ### 3. 跑
 
-对你的 agent 说：
+**方式 A：在 agent 里说**（推荐，会触发 LLM 增强让海报更贴脸）
 
 > 跑我的 vibe 自画像
 
-或者命令行：
+**方式 B：命令行**
 
 ```bash
 python3 ~/.workbuddy/skills/vibe-portrait/run.py
+```
+
+第一次会问你昵称（保存到 `~/.vibe-portrait/config.json`，下次不再问）。然后列出本机所有对话窗口让你选哪个 / 哪几个项目要分析。最后产出在当前目录的 `vibe-portrait/<日期>/` 下。
+
+### 4. 升级
+
+```bash
+cd ~/.workbuddy/skills/vibe-portrait && git pull
 ```
 
 ---
