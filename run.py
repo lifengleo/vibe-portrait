@@ -17,15 +17,35 @@ Vibe 自画像 · 主入口（两阶段 pipeline）
 import argparse
 import json
 import sys
+import io
 import shutil
 import subprocess
 from pathlib import Path
 from datetime import datetime
 
+# === [Issue #1 P0] 强制 stdout/stderr 为 UTF-8 ===
+# 某些终端环境（macOS Terminal、宿主 agent 透传 PIPE 等）默认 encoding 不是 utf-8，
+# 会把所有中文输出渲染成 ��� 乱码。新用户根本看不懂窗口列表和「匹配作家」行。
+# 文件 IO 不受影响，只修复 stdout/stderr。
+def _force_utf8_io():
+    for name in ("stdout", "stderr"):
+        stream = getattr(sys, name, None)
+        if stream is None:
+            continue
+        enc = (getattr(stream, "encoding", "") or "").lower()
+        if enc and "utf-8" not in enc and "utf8" not in enc:
+            try:
+                buf = stream.buffer
+                setattr(sys, name, io.TextIOWrapper(buf, encoding="utf-8", line_buffering=True))
+            except Exception:
+                pass
+
+_force_utf8_io()
+
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 
-from adapters import detect_all, list_all_projects, get_adapter_by_name  # noqa
+from adapters import detect_all, list_all_projects, get_adapter_by_name, detect_host_agent  # noqa
 from core.analyze import analyze  # noqa
 from core.render import render  # noqa
 
@@ -59,16 +79,21 @@ def prompt_user_name() -> str:
     return name
 
 
-def list_projects_with_index():
-    projects = list_all_projects()
+def list_projects_with_index(only_sources=None):
+    projects = list_all_projects(only_sources=only_sources)
     if not projects:
         print("\n没检测到任何 agent 历史。")
-        print("请确认下列目录是否存在：")
-        print("  ~/.workbuddy/projects/")
-        print("  ~/.claude/projects/")
-        print("  ~/.codex/sessions/")
+        if only_sources:
+            print(f"已限定只扫: {', '.join(only_sources)}")
+            print("如需跨 agent 扫描，请加 --include 参数（如 --include workbuddy,claude,codex）")
+        else:
+            print("请确认下列目录是否存在：")
+            print("  ~/.workbuddy/projects/")
+            print("  ~/.claude/projects/")
+            print("  ~/.codex/sessions/")
         sys.exit(1)
-    print(f"\n▸ 检测到 {len(projects)} 个对话窗口：\n")
+    sources_set = sorted({p.source for p in projects})
+    print(f"\n▸ 检测到 {len(projects)} 个对话窗口（来源: {', '.join(sources_set)}）：\n")
     for i, p in enumerate(projects, 1):
         print("  " + p.render_line(i))
     return projects
@@ -192,6 +217,57 @@ def screenshot(out_dir: Path):
         print(f"⚠️  截图失败: {e}（确认装了 playwright + sharp）")
 
 
+def _resolve_include(include_arg, host_agent):
+    """解析 --include 参数，返回 only_sources 列表（None 表示不限制）。
+
+    默认行为（include_arg=None）：
+      - 如果识别出宿主 agent → 只扫宿主，返回 [host_agent]
+      - 如果识别不出宿主（罕见） → 返回 None，扫所有
+
+    显式：
+      - --include all → 返回 None
+      - --include workbuddy,claude → 返回 ['workbuddy','claude']
+    """
+    if include_arg is None:
+        if host_agent:
+            return [host_agent]
+        return None  # 没识别出宿主，不限制
+    if include_arg.strip().lower() == "all":
+        return None
+    parts = [p.strip() for p in include_arg.split(",") if p.strip()]
+    return parts if parts else None
+
+
+def _resolve_finalize_path(arg_value):
+    """解析 --finalize 参数。
+
+    传 '__AUTO__' 表示用户没传具体路径 → 自动找最新一份 data.json。
+    传具体路径 → 直接用。
+    """
+    if arg_value == "__AUTO__":
+        # 优先在 ./vibe-portrait/<日期>/ 下找最新
+        candidates = []
+        for base in [Path("./vibe-portrait"), HERE / "vibe-portrait"]:
+            if base.exists():
+                for d in sorted(base.iterdir(), reverse=True):
+                    f = d / "data.json"
+                    if f.exists():
+                        candidates.append(f)
+        if not candidates:
+            print("没找到任何 data.json。")
+            print("先跑一次 `python3 run.py` 生成数据，再用 --finalize。")
+            return None
+        path = candidates[0]
+        print(f"▸ 自动定位到最新 data.json: {path}")
+        return path
+
+    p = Path(arg_value)
+    if not p.exists():
+        print(f"data.json 不存在: {p}")
+        return None
+    return p
+
+
 def main():
     ap = argparse.ArgumentParser(description="Vibe 自画像生成器（两阶段）")
     ap.add_argument("--user", help="昵称（不传则从配置/交互获取）")
@@ -201,16 +277,21 @@ def main():
     ap.add_argument("--source", help="adapter 名称")
     ap.add_argument("--out", help="输出目录")
     ap.add_argument("--no-screenshot", action="store_true", help="跳过截图")
-    ap.add_argument("--finalize", help="读取 enriched data.json 并直接渲染 + 截图")
+    ap.add_argument("--finalize", nargs="?", const="__AUTO__",
+                    help="读取 enriched data.json 并直接渲染 + 截图。"
+                         "不传路径时自动找最新一份 vibe-portrait/<日期>/data.json")
     ap.add_argument("--skip-llm", action="store_true",
                     help="不等 LLM 增强，直接用兜底默认渲染")
+    ap.add_argument("--include", default=None,
+                    help="扫描哪些 agent 的对话历史，逗号分隔（如 workbuddy,claude,codex）。"
+                         "默认只扫脚本所在的宿主 agent，避免越权读取其他 agent 数据。"
+                         "传 'all' 等价于显式扫描所有 agent。")
     args = ap.parse_args()
 
     # ===== Finalize 模式 =====
     if args.finalize:
-        data_path = Path(args.finalize)
-        if not data_path.exists():
-            print(f"data.json 不存在: {data_path}")
+        data_path = _resolve_finalize_path(args.finalize)
+        if data_path is None:
             sys.exit(1)
         out_dir = data_path.parent
         analysis = json.loads(data_path.read_text(encoding="utf-8"))
@@ -224,9 +305,22 @@ def main():
 
     print("Vibe 自画像 · 启动\n")
 
+    # ===== 解析 --include 与宿主 agent =====
+    host = detect_host_agent()
+    only_sources = _resolve_include(args.include, host)
+    if only_sources is None:
+        # 显式 all
+        print("▸ 跨 agent 扫描已开启：将读取 workbuddy / claude / codex 全部对话历史")
+        print("  (这是 opt-in 行为；若只想扫宿主 agent，请去掉 --include all)\n")
+    else:
+        # 默认只扫宿主
+        print(f"▸ 只扫描 [{', '.join(only_sources)}] 的对话历史"
+              + ("（脚本所在宿主 agent）" if host and only_sources == [host] else "")
+              + "\n  (跨 agent 扫描请加 --include all)\n")
+
     # ===== --list 模式：纯查询，不需要昵称 =====
     if args.list:
-        list_projects_with_index()
+        list_projects_with_index(only_sources=only_sources)
         return
 
     # ===== --project 模式：直接指定 jsonl，跳过项目检测 =====
@@ -259,7 +353,7 @@ def main():
             user_name = prompt_user_name()
 
         # 2. 列项目
-        projects = list_projects_with_index()
+        projects = list_projects_with_index(only_sources=only_sources)
 
         # 3. 选项目
         if args.multi:
@@ -276,11 +370,12 @@ def main():
 
     # 4. 分析
     print(f"\n▸ 共 {len(prompts)} 条 prompt，开始分析...")
+    print("  [1/3] 计算三轴 + 匹配作家 + 抽取口癖 + 筛选金句 + 计算徽章...")
     analysis = analyze(prompts, user_name)
-
-    print(f"  → 三轴: length={analysis['axes'][0]:.2f} calm={analysis['axes'][1]:.2f} architect={analysis['axes'][2]:.2f}")
-    print(f"  → 匹配作家: {analysis['matched_author']['name_zh']}")
-    print(f"  → 触发章节: {[ch['id'] for ch in analysis['chapters']]}")
+    print(f"  [2/3] ✓ 三轴: length={analysis['axes'][0]:.2f} calm={analysis['axes'][1]:.2f} architect={analysis['axes'][2]:.2f}")
+    print(f"        ✓ 匹配作家: {analysis['matched_author']['name_zh']}")
+    print(f"        ✓ 触发章节: {[ch['id'] for ch in analysis['chapters']]}")
+    print(f"  [3/3] 拼装 data.json...")
 
     # 5. 输出 data.json
     out_dir = Path(args.out) if args.out else Path("./vibe-portrait") / datetime.now().strftime("%Y-%m-%d")
