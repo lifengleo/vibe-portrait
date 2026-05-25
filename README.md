@@ -14,37 +14,39 @@
 
 ## 安装
 
-### 1. 拉到 skills 目录
+### Claude Code（一键装，推荐）
 
-支持任何使用 SKILL.md 机制的本地 agent（WorkBuddy / Claude Code / Codex CLI 等）。
+在 Claude Code 里输入：
 
-**WorkBuddy 用户**：
-```bash
-git clone https://github.com/lifengleo/vibe-portrait ~/.workbuddy/skills/vibe-portrait
+```
+/plugin marketplace add lifengleo/vibe-portrait
+/plugin install vibe-portrait@vibe-portrait
 ```
 
-**Claude Code 用户**：
+然后说一句「跑我的 vibe 自画像」就行。
+
+### WorkBuddy / Codex CLI / 其他 agent（git clone）
+
 ```bash
-git clone https://github.com/lifengleo/vibe-portrait ~/.claude/skills/vibe-portrait
+# WorkBuddy
+git clone https://github.com/lifengleo/vibe-portrait ~/.workbuddy/skills/vibe-portrait
+
+# Codex CLI
+git clone https://github.com/lifengleo/vibe-portrait ~/.codex/skills/vibe-portrait
 ```
 
 > 不会用 git？也可以下 [release tar 包](https://github.com/lifengleo/vibe-portrait/releases) 解压到对应目录。
 
-### 2. 装依赖
+### 装截图依赖（可选）
 
-**系统要求**：Python 3.9+ / Node.js 18+
+只想要 HTML 海报可以**完全跳过这一步**——核心产出就是 HTML，能直接打开看。
+
+如果想要自动导出 JPG（分享到朋友圈/即刻用）：
 
 ```bash
-# 进入 skill 目录（路径因 agent 而异，见上一步）
-cd ~/.workbuddy/skills/vibe-portrait    # 或对应的 Claude / Codex 路径
-
-# 装截图 + 压图依赖（playwright + sharp，版本锁在 package.json）
-npm install
+cd <skill 目录>
+npm install     # 装 playwright + sharp，版本锁在 package.json
 ```
-
-> Python 用标准库，无需额外装。
->
-> 如果只要 HTML 不要 JPG，**可以跳过这一步**——`run.py` 会自动检测，没装时跳过截图并打 warning，HTML 照样产出。
 
 ### 3. 跑
 

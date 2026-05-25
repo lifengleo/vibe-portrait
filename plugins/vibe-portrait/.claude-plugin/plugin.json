@@ -1,0 +1,12 @@
+{
+  "name": "vibe-portrait",
+  "version": "0.2.0",
+  "description": "把你 vibe coding 时的 prompt 历史，做成一张「年度自画像」海报。",
+  "author": {
+    "name": "lifengleo",
+    "url": "https://github.com/lifengleo"
+  },
+  "homepage": "https://github.com/lifengleo/vibe-portrait",
+  "license": "MIT",
+  "keywords": ["vibe-coding", "wrapped", "self-portrait", "prompt-analytics", "ai-poster"]
+}

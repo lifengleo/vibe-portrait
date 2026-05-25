@@ -1,0 +1,14 @@
+{
+  "name": "vibe-portrait",
+  "owner": {
+    "name": "lifengleo",
+    "url": "https://github.com/lifengleo"
+  },
+  "plugins": [
+    {
+      "name": "vibe-portrait",
+      "source": "./plugins/vibe-portrait",
+      "description": "把你 vibe coding 时的 prompt 历史，做成一张「年度自画像」海报。三轴匹配 9 位作家、统计口癖与作息、葬AI 风锐评。"
+    }
+  ]
+}
