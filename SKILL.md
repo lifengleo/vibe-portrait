@@ -1,7 +1,7 @@
 ---
 name: vibe-portrait
 description: |
-  Vibe 自画像——把用户和 AI 共写产品时的 prompt 历史，做成一张「年度自画像」海报。
+  Vibe 自画像——把用户 vibe coding 时的 prompt 历史，做成一张「年度自画像」海报。
   自动检测本地多个 agent（WorkBuddy / Claude Code / Codex CLI 等）的对话历史，
   让用户选一个或多个对话窗口，统计 prompt 习惯（句长/作息/口癖/金句），
   匹配 9 位作家中最像的一位作为镜像，输出 HTML + JPG 长图。
@@ -13,7 +13,7 @@ description: |
 
   当用户说以下任一意图时触发本 skill：
     "跑我的 vibe 自画像" / "做一份 vibe 自画像" / "盘点我的 vibe coding"
-    "看看我和 AI 都说了什么" / "我的 prompt 习惯是什么样的"
+    "看看我 vibe 了多少" / "我的 prompt 习惯是什么样的"
     "vibe portrait" / "vibe wrapped"
 allowed-tools: Bash, Read, Write
 agent_created: true

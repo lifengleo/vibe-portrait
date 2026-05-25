@@ -1,6 +1,6 @@
 # Vibe 自画像（vibe-portrait）
 
-> 把你和 AI 共写产品时的 prompt 历史，做成一张「自画像」海报。
+> 把你 vibe coding 时的 prompt 历史，做成一张「自画像」海报。
 
 ```
 你 vibe 了一个项目，叫 Sona。
