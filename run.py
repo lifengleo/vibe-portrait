@@ -82,18 +82,12 @@ def prompt_user_name() -> str:
 def list_projects_with_index(only_sources=None):
     projects = list_all_projects(only_sources=only_sources)
     if not projects:
-        print("\n没检测到任何 agent 历史。")
-        if only_sources:
-            print(f"已限定只扫: {', '.join(only_sources)}")
-            print("如需跨 agent 扫描，请加 --include 参数（如 --include workbuddy,claude,codex）")
-        else:
-            print("请确认下列目录是否存在：")
-            print("  ~/.workbuddy/projects/")
-            print("  ~/.claude/projects/")
-            print("  ~/.codex/sessions/")
+        host = (only_sources[0] if only_sources else None)
+        host_label = {"codex": "Codex CLI", "claude": "Claude Code", "workbuddy": "WorkBuddy"}.get(host, host or "本机")
+        print(f"\n没有从 {host_label} 检测到对话历史。")
+        print(f"在 {host_label} 里多和 AI 聊几次，回头再来跑就行。")
         sys.exit(1)
-    sources_set = sorted({p.source for p in projects})
-    print(f"\n▸ 检测到 {len(projects)} 个对话窗口（来源: {', '.join(sources_set)}）：\n")
+    print(f"\n▸ 检测到 {len(projects)} 个对话窗口：\n")
     for i, p in enumerate(projects, 1):
         print("  " + p.render_line(i))
     return projects
@@ -217,25 +211,19 @@ def screenshot(out_dir: Path):
         print(f"⚠️  截图失败: {e}（确认装了 playwright + sharp）")
 
 
-def _resolve_include(include_arg, host_agent):
-    """解析 --include 参数，返回 only_sources 列表（None 表示不限制）。
+def _resolve_host_only(host_agent):
+    """严格宿主隔离：永远只扫宿主 agent 的对话历史。
 
-    默认行为（include_arg=None）：
-      - 如果识别出宿主 agent → 只扫宿主，返回 [host_agent]
-      - 如果识别不出宿主（罕见） → 返回 None，扫所有
+    - skill 装在 ~/.codex/skills/   → 只扫 ~/.codex/sessions/
+    - skill 装在 ~/.claude/skills/  → 只扫 ~/.claude/projects/
+    - skill 装在 ~/.workbuddy/skills/ → 只扫 ~/.workbuddy/projects/
 
-    显式：
-      - --include all → 返回 None
-      - --include workbuddy,claude → 返回 ['workbuddy','claude']
+    如果识别不出宿主（罕见，比如克隆到任意目录手动跑），返回 None。
+    用户应当把 skill 放在标准位置；不允许跨 agent 读取，永远不询问。
     """
-    if include_arg is None:
-        if host_agent:
-            return [host_agent]
-        return None  # 没识别出宿主，不限制
-    if include_arg.strip().lower() == "all":
-        return None
-    parts = [p.strip() for p in include_arg.split(",") if p.strip()]
-    return parts if parts else None
+    if host_agent:
+        return [host_agent]
+    return None
 
 
 def _resolve_finalize_path(arg_value):
@@ -282,10 +270,6 @@ def main():
                          "不传路径时自动找最新一份 vibe-portrait/<日期>/data.json")
     ap.add_argument("--skip-llm", action="store_true",
                     help="不等 LLM 增强，直接用兜底默认渲染")
-    ap.add_argument("--include", default=None,
-                    help="扫描哪些 agent 的对话历史，逗号分隔（如 workbuddy,claude,codex）。"
-                         "默认只扫脚本所在的宿主 agent，避免越权读取其他 agent 数据。"
-                         "传 'all' 等价于显式扫描所有 agent。")
     args = ap.parse_args()
 
     # ===== Finalize 模式 =====
@@ -305,18 +289,19 @@ def main():
 
     print("Vibe 自画像 · 启动\n")
 
-    # ===== 解析 --include 与宿主 agent =====
+    # ===== 严格宿主隔离 =====
+    # skill 装在哪个 agent 下，就只读那个 agent 的对话历史。
+    # 不会、也不询问读取其他 agent 的数据。
     host = detect_host_agent()
-    only_sources = _resolve_include(args.include, host)
+    only_sources = _resolve_host_only(host)
     if only_sources is None:
-        # 显式 all
-        print("▸ 跨 agent 扫描已开启：将读取 workbuddy / claude / codex 全部对话历史")
-        print("  (这是 opt-in 行为；若只想扫宿主 agent，请去掉 --include all)\n")
-    else:
-        # 默认只扫宿主
-        print(f"▸ 只扫描 [{', '.join(only_sources)}] 的对话历史"
-              + ("（脚本所在宿主 agent）" if host and only_sources == [host] else "")
-              + "\n  (跨 agent 扫描请加 --include all)\n")
+        # 罕见：用户把 skill clone 到了非标准位置（不在 ~/.codex/skills、~/.claude/skills、~/.workbuddy/skills 下）
+        print("⚠️  无法识别 skill 所在的 agent 宿主。")
+        print("   请把 skill 放在以下位置之一：")
+        print("     ~/.codex/skills/vibe-portrait     (Codex CLI)")
+        print("     ~/.claude/skills/vibe-portrait    (Claude Code)")
+        print("     ~/.workbuddy/skills/vibe-portrait (WorkBuddy)")
+        sys.exit(1)
 
     # ===== --list 模式：纯查询，不需要昵称 =====
     if args.list:

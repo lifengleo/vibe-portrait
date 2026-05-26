@@ -73,6 +73,10 @@ agent 应主动说出**类似下面这段话**（口吻按写作基准——简�
 如果用户回复"先看看产物长啥样"/"有没有示例"：
 - 告诉用户：**装完先生成一张 demo 海报需要至少 5 条本地 prompt**——如果本机没历史数据，建议先聊几句再回来跑。
 
+如果跑 `--list` 发现没有对话窗口（adapter 扫不到任何 jsonl）：
+- 告诉用户：「在这个 agent 里多聊几次，回头再来跑就行」
+- **绝对不要**问用户能不能去读其他 agent 的历史——见下方「🔒 严格宿主隔离原则」
+
 ### 反例：装完之后**不要**这样做
 
 ❌ **保持沉默，等用户主动问怎么用**——这是当前 v0.2.0 的最大体验缺陷
@@ -80,33 +84,25 @@ agent 应主动说出**类似下面这段话**（口吻按写作基准——简�
 ❌ 立刻自己跑 `python3 run.py` 不问用户——必须先问昵称和窗口选择
 ❌ 把作家清单/徽章字典/三轴公式当开场白讲——那是用户**看到海报后**自己去翻的
 
-### 🔒 跨 agent 数据读取守则（**强制约束，没得商量**）
+### 🔒 严格宿主隔离原则（**强制约束**）
 
-> 这是 **v0.2.1 之后的新约束**——v0.2.0 的默认行为是越权扫描所有 agent 历史，已被纠正。
+> v0.2.2 起，本 skill 严格遵守"宿主隔离"——agent 之间像不同的应用，互不感知。
 
-本 skill 装在哪个 agent 下，**默认就只读那个 agent 的对话历史**：
-- skill 装在 `~/.codex/skills/...` → 默认只扫 `~/.codex/sessions/`
-- skill 装在 `~/.workbuddy/skills/...` → 默认只扫 `~/.workbuddy/projects/`
-- skill 装在 `~/.claude/skills/...` → 默认只扫 `~/.claude/projects/`
+**唯一规则**：skill 装在哪个 agent 下，**就只读那个 agent 的对话历史，永远不读其他 agent 的数据，永远不询问用户能不能跨 agent 读**。
 
-`run.py` 已经实现了这个默认行为（通过自动检测脚本路径推断宿主 agent）。
+- skill 装在 `~/.codex/skills/...`     → 只扫 `~/.codex/sessions/`
+- skill 装在 `~/.claude/skills/...`    → 只扫 `~/.claude/projects/`
+- skill 装在 `~/.workbuddy/skills/...` → 只扫 `~/.workbuddy/projects/`
 
-**如果用户提出"我想合并 WorkBuddy 和 Codex 一起分析"**——这是合法需求，但 **agent 必须先做 3 件事**：
+`run.py` 自动通过路径检测宿主 agent 并写死扫描范围，没有任何参数能扩大它。
 
-1. **明确口头告知**：
-   > "为了做一张更完整的海报，我需要读取 `~/.workbuddy/projects/` 下的对话历史。
-   >  这些是你在 WorkBuddy 里和 AI 聊天的记录，**完全在你本机处理，不会上传**。
-   >  你确认要这样做吗？"
-2. **用 `AskUserQuestion` 二次确认**：选项包括「只用本 agent 的历史」「合并所有 agent」「取消」
-3. **用户明确同意后**才传 `--include all` 或 `--include workbuddy,codex` 之类的显式参数
+**如果当前 agent 没有足够对话历史怎么办**：
+- 直接告诉用户「在这个 agent 里多聊几次，回头再来跑就行」
+- **不要**主动提到其他 agent 的数据可以"补"——用户在 Codex 里跑就当作 WorkBuddy 不存在
+- **不要**给用户 AskUserQuestion 选要不要合并其他 agent 数据
+- **不要**在任何文案里出现"WorkBuddy / Codex / Claude Code"等其他 agent 的名字
 
-**绝对禁止**：
-- ❌ 不告知就跑 `run.py` 扫描所有 agent
-- ❌ 把"跨 agent 默认开启"作为 feature 宣传
-- ❌ 用 `--include all` 作为默认参数
-- ❌ 在 Phase 0 的开场白里隐藏"我会读你所有 agent 历史"这个动作
-
-> 💡 **为什么这条规则存在**：v0.2.0 的 run.py 默认会扫所有 agent 历史，导致用户在 Codex 里跑 skill 时被读了 WorkBuddy 数据，引发隐私顾虑。这是设计缺陷，已在 v0.2.1 修复。
+**为什么这条规则存在**：用户在不同 agent 里聊不同话题，agent 之间应当隔离。"在 Codex 里被询问要不要读 WorkBuddy 数据" 这件事本身就是体验断点，会让用户觉得越权。这个 skill 的目标是做一个"通用的 vibe coding 自画像工具"，每个 agent 内自成一体即可。
 
 ---
 

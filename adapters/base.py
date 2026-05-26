@@ -28,12 +28,12 @@ class ProjectInfo:
     last_updated: int    # 最后更新时间（Unix ms）
 
     def render_line(self, idx: int) -> str:
-        """渲染为列表里的一行"""
+        """渲染为列表里的一行（宿主隔离前提下，不显示 source 前缀）"""
         from datetime import datetime
         first = datetime.fromtimestamp(self.first_at / 1000).strftime("%m.%d")
         last = datetime.fromtimestamp(self.last_updated / 1000).strftime("%m.%d")
         return (
-            f"[{idx:02d}] [{self.source_display}] {self.label} / "
+            f"[{idx:02d}] {self.label} / "
             f"{self.prompt_count} 条 / {first} → {last}"
         )
 
